@@ -161,7 +161,6 @@
                                (hide-context!)
                                (.preventDefault e))
             :on-key-up esc-handler!
-            :tab-index -1
             :ref #(some-> % (.focus))}
       (when display [backdrop hide-context!])
       (when display
@@ -189,11 +188,5 @@
    [my-other-fn #(prn (str 1 2 3))]]"
   ([evt name-fn-coll] (context! evt default-menu-atom name-fn-coll))
   ([evt menu-atom name-fn-coll]
-   (show-context! menu-atom name-fn-coll 
-                  (- (.-pageX evt) ;; absolute position
-                     (- (.-pageX evt) ;; scrolled
-                        (.-clientX evt)))
-                  (- (.-pageY evt) ;; absolute position
-                     (- (.-pageY evt) ;; scrolled
-                        (.-clientY evt))))
+   (show-context! menu-atom name-fn-coll (.-pageX evt) (.-pageY evt))
    (.preventDefault evt)))
