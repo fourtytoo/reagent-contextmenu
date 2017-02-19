@@ -117,12 +117,20 @@
       :reagent-render
       (fn []
         (let [{:keys [display actions left top]} @menu-atom
+              esc-handler! (fn [evt]
+                             (when (= (.-keyCode evt) 27) ;; `esc' key
+                               (.stopPropagation evt)
+                               (hide-context!)))
               scroll! (fn [evt]
                         (let [dy (.-deltaY evt)]
                           (swap! menu-atom update-in [:top] #(- % dy))))]
           [:ul.dropdown-menu.context-menu
            {:ref (fn [this]
-                   (reset! dom-node this))
+                   (reset! dom-node this)
+                   (when this
+                     (.focus this)))
+            :on-key-up esc-handler!
+            :tab-index -1
             :role "menu"
             :on-wheel scroll!
             :style {:display (or display "none")
@@ -153,15 +161,10 @@
   ([menu-atom]
    ;; remove the context menu if we click out of it or press `esc' (like the normal context menu)  
    (let [hide-context! #(hide-context! menu-atom)
-         esc-handler! (fn [evt] (when (= (.-keyCode evt) 27) ;; `esc' key
-                                  (.stopPropagation evt)
-                                  (hide-context!)))
          display (get @menu-atom :display)]
      [:div {:on-context-menu (fn [e]
                                (hide-context!)
-                               (.preventDefault e))
-            :on-key-up esc-handler!
-            :ref #(some-> % (.focus))}
+                               (.preventDefault e))}
       (when display [backdrop hide-context!])
       (when display
         [inner-context-menu menu-atom hide-context!])])))
